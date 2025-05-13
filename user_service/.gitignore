@@ -34,7 +34,6 @@ coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
-celerybeat-schedule
 *.pid
 *.manifest
 instance/

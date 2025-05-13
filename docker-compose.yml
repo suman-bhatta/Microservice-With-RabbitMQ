@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    hostname: rabbitmq
+
+  user_service:
+    build: ./user_service
+    volumes:
+      - ./user_service:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+
+  celery_worker:
+    build: ./user_service
+    command: celery -A user_service worker --loglevel=info
+    volumes:
+      - ./user_service:/app
+    depends_on:
+      - rabbitmq

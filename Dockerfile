@@ -1,28 +1,29 @@
-FROM python:3.11-slim
+FROM python:3.13.3-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# Set environment variables to avoid prompts during installation
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# Create app directory
+# Create and set the working directory
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
+RUN apt-get update && \
+    apt-get install -y \
     libpq-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m user
-USER user
+# Copy the requirements file and install Python dependencies
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Copy requirements first and install dependencies
-COPY --chown=user:user requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the rest of the project
+COPY . /app/
 
-# Copy the rest of the app code
-COPY --chown=user:user . .
+# Expose the port the app runs on
+EXPOSE 8000
 
-# Run the development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Set the entrypoint to the entrypoint.prod.sh script
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.prod.sh"]
